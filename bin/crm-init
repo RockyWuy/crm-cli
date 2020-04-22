@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+/*
+ * @Author: rockyWu
+ * @Date: 2020-04-21 17:42:46
+ * @Description:
+ * @LastEditors: rockyWu
+ * @LastEditTime: 2020-04-22 19:18:37
+ */
+const fs = require("fs");
+const ora = require("ora");
+const chalk = require("chalk");
+const inquirer = require("inquirer");
+const program = require("commander");
+const handlebars = require("handlebars");
+const logSymbols = require("log-symbols");
+const download = require("download-git-repo");
+const tplObj = require(`${__dirname}/../template`);
+
+program.usage("<project-name>").parse(process.argv);
+if (program.args.length < 1) {
+  return program.help();
+}
+
+let projectName = program.args[0];
+if (fs.existsSync(projectName)) {
+  console.log(logSymbols.error, chalk.red("项目已存在"));
+  process.exit(0);
+}
+
+let list = [
+  {
+    type: "list",
+    name: "templateName",
+    message: "请选择项目模板:",
+    choices: Object.keys(tplObj),
+  },
+];
+inquirer.prompt(list).then((answers) => {
+  let { templateName } = answers;
+  inquirer
+    .prompt([
+      { name: "description", message: "请输入项目描述" },
+      { name: "version", message: "请输入版本号", default: "0.0.1" },
+      { name: "author", message: "请输入作者", default: "rockywu" },
+    ])
+    .then((answers) => {
+      const spinner = ora("Start Generation...");
+      spinner.start();
+      download(
+        `direct:${tplObj[templateName]}`,
+        projectName,
+        { clone: true },
+        (err) => {
+          if (err) {
+            spinner.fail();
+            console.log(
+              logSymbols.error,
+              chalk.red(`Generation failed. ${err}`)
+            );
+            return;
+          } else {
+            const fileName = `${projectName}/package.json`;
+            const meta = {
+              ...answers,
+              name: projectName,
+            };
+            if (fs.existsSync(fileName)) {
+              // 重新配置 package.json
+              const content = fs.readFileSync(fileName).toString();
+              const result = handlebars.compile(content)(meta);
+              fs.writeFileSync(fileName, result);
+            }
+            spinner.succeed();
+            console.log(logSymbols.success, chalk.green(`Generation success`));
+            console.log(`\n> Get Started with following commands:`);
+            console.log(chalk.green(`$ cd ${projectName} && npm install`));
+          }
+        }
+      );
+    });
+});

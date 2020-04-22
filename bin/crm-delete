@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+/*
+ * @Author: rockyWu
+ * @Date: 2020-04-21 17:42:46
+ * @Description:
+ * @LastEditors: rockyWu
+ * @LastEditTime: 2020-04-22 19:32:36
+ */
+
+const fs = require("fs");
+const chalk = require("chalk");
+const inquirer = require("inquirer");
+const tplObj = require(`${__dirname}/../template`);
+const { getTemplateList } = require("../lib/utils");
+
+let question = [
+  {
+    type: "list",
+    name: "name",
+    message: "请选择需要删除的模板: ",
+    choices: Object.keys(tplObj),
+  },
+];
+
+inquirer.prompt(question).then((answers) => {
+  let { name } = answers;
+  delete tplObj[name];
+  fs.writeFile(
+    `${__dirname}/../template.json`,
+    JSON.stringify(tplObj),
+    "utf-8",
+    (err) => {
+      if (err) console.log(err);
+      console.log(chalk.green("\n Deleted successfully! \n"));
+      console.log(chalk.grey("The latest template list is: \n"));
+      getTemplateList();
+    }
+  );
+});

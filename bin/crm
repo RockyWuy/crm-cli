@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+"use strict";
+
+const { exec } = require("child_process");
+const program = require("commander");
+const chalk = require("chalk");
+const pkg = require("../package.json");
+
+// 检测 cli是否需要更新
+// const name = pkg.name;
+// const version = pkg.version;
+// console.log(name, version);
+// exec(`${name.split("/")[1]} -v`, (err, ltsVersion) => {
+//   console.log(ltsVersion);
+//   if (err) {
+//     console.log(`${err}`);
+//     return;
+//   }
+//   if (ltsVersion.trim() !== version) {
+//     console.log(
+//       chalk.yellow(
+//         `cli 版本过旧，建议执行 npm i -g ${name}@latest 升级 cli： ${version} -> ${ltsVersion} `
+//       )
+//     );
+//   }
+program
+  .version(pkg.version, "-v, --version")
+  .usage("<command> [options]")
+  .command("add", "add a new template")
+  .command("delete", "delete a template")
+  .command("list", "list all the templates")
+  .command("init", "generate a new project from a template")
+  .parse(process.argv);
+// });

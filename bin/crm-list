@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+/*
+ * @Author: rockyWu
+ * @Date: 2020-04-21 17:42:46
+ * @Description:
+ * @LastEditors: rockyWu
+ * @LastEditTime: 2020-04-22 19:32:04
+ */
+const chalk = require("chalk");
+const tplObj = require(`${__dirname}/../template`);
+const { getTemplateList } = require('../lib/utils');
+
+getTemplateList();
